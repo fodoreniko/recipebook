@@ -5,7 +5,32 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
+    kotlin("plugin.serialization").version("1.9.22")
+    id("app.cash.sqldelight").version("2.0.1")
 }
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("data")
+        }
+    }
+}
+
+
+/*
+dependencies {
+    implementation("app.cash.sqldelight:runtime:2.0.1")
+    implementation("app.cash.sqldelight:android-driver:2.0.1") // Android platformhoz
+    implementation("app.cash.sqldelight:native-driver:2.0.1") // Desktop platformhoz
+}
+*/
+
 
 kotlin {
     androidTarget {
@@ -15,15 +40,30 @@ kotlin {
             }
         }
     }
-    
+
     jvm("desktop")
-    
+
+    /*
+    sourceSets.androidMain.dependencies {
+        implementation("app.cash.sqldelight:android-driver:2.0.1")
+    }
+
+    // or iosMain, windowsMain, etc.
+    sourceSets.nativeMain.dependencies {
+        implementation("app.cash.sqldelight:native-driver:2.0.1")
+    }
+
+     */
+
+
+
     sourceSets {
         val desktopMain by getting
-        
+
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
+            implementation("app.cash.sqldelight:android-driver:2.0.1")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -35,6 +75,8 @@ kotlin {
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
+            //implementation("com.squareup.sqldelight.drivers.native.NativeSqliteDriver:2.0.1")
         }
     }
 }
