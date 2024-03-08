@@ -1,3 +1,4 @@
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -5,26 +6,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import data.RecipeItem
+import kotlinx.coroutines.launch
+import java.io.IOException
+
 
 @Composable
-fun AddRecipe(onRecipeAdded: (RecipeItem) -> Unit) {
+fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit) {
     var name by remember { mutableStateOf("") }
     var instructions by remember { mutableStateOf("") }
     var ingredients by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
     var preptime by remember { mutableStateOf("") }
+    var selectedImage by remember { mutableStateOf<ByteArray?>(null) }
+    var showFilePicker by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    var imageAdded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -67,13 +73,26 @@ fun AddRecipe(onRecipeAdded: (RecipeItem) -> Unit) {
 
         Button(
             onClick = {
-
+                showFilePicker = true
             }
         ) {
             Text("Upload picture")
         }
 
+        if(imageAdded)  {
+            selectedImage?.let { imageData ->
+                Image(
+                    bitmap = imageHandler.toImageBitmap(imageData),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .width(72.dp)
+                        .fillMaxWidth()
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = {
                 val newRecipe = RecipeItem(
@@ -84,12 +103,32 @@ fun AddRecipe(onRecipeAdded: (RecipeItem) -> Unit) {
                     category = category,
                     saved = 0,
                     preptime = preptime,
-                    image = null
+                    image = selectedImage
                 )
                 onRecipeAdded(newRecipe)
             }
         ) {
             Text("Add recipe")
+        }
+
+        if (showFilePicker) {
+            val fileType = listOf("jpg", "png")
+
+            FilePicker(show = showFilePicker, fileExtensions = fileType) { platformFile ->
+                showFilePicker = false
+
+                platformFile?.let {
+                    coroutineScope.launch {
+                        try {
+                            val bytes = imageHandler.getFileByteArray(platformFile)
+                            selectedImage = imageHandler.resizeImage(bytes, 1000)
+                            imageAdded = true
+                        } catch (e: IOException) {
+                            throw e
+                        }
+                    }
+                }
+            }
         }
     }
 }

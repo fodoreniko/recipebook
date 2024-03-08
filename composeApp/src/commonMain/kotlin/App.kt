@@ -28,19 +28,19 @@ import androidx.compose.ui.Modifier
 import data.RecipeItem
 import data.RecipeRepository
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-
-
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.width
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun App(recipes: List<RecipeItem>, repository: RecipeRepository) {
+fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: ImageHandler) {
     var selectedRecipe by remember { mutableStateOf<RecipeItem?>(null) }
     var addingRecipe by remember { mutableStateOf(false) }
     var currentRecipes by remember { mutableStateOf(recipes) }
 
     MaterialTheme {
         if (addingRecipe) {
-            AddRecipe(
+            AddRecipe(imageHandler,
                 onRecipeAdded = { newRecipe ->
                     addingRecipe = false
                     repository.insertRecipe(newRecipe)
@@ -60,7 +60,7 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository) {
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(currentRecipes) { recipe ->
-                            RecipeListItem(recipe = recipe) {
+                            RecipeListItem(imageHandler, recipe = recipe) {
                                 selectedRecipe = recipe
                             }
                             Spacer(modifier = Modifier.height(8.dp))
@@ -82,11 +82,22 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository) {
 }
 
 @Composable
-fun RecipeListItem(recipe: RecipeItem, onClick: () -> Unit) {
+fun RecipeListItem(imageHandler: ImageHandler, recipe: RecipeItem, onClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
+
+        recipe.image?.let { imageData ->
+            val imageBitmap = imageHandler.toImageBitmap(imageData)
+            Image(
+                bitmap = imageBitmap,
+                contentDescription = null,
+                modifier = Modifier
+                    .width(72.dp)
+                    .fillMaxWidth()
+            )
+        }
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -104,6 +115,7 @@ fun RecipeListItem(recipe: RecipeItem, onClick: () -> Unit) {
                 style = MaterialTheme.typography.body1
             )
         }
+
     }
 }
 
@@ -116,6 +128,7 @@ fun RecipeDetails(recipe: RecipeItem, onClose: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Text(
             text = recipe.name,
             style = MaterialTheme.typography.h4,

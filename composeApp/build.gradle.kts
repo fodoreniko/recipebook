@@ -23,15 +23,6 @@ sqldelight {
 }
 
 
-/*
-dependencies {
-    implementation("app.cash.sqldelight:runtime:2.0.1")
-    implementation("app.cash.sqldelight:android-driver:2.0.1") // Android platformhoz
-    implementation("app.cash.sqldelight:native-driver:2.0.1") // Desktop platformhoz
-}
-*/
-
-
 kotlin {
     androidTarget {
         compilations.all {
@@ -43,20 +34,6 @@ kotlin {
 
     jvm("desktop")
 
-    /*
-    sourceSets.androidMain.dependencies {
-        implementation("app.cash.sqldelight:android-driver:2.0.1")
-    }
-
-    // or iosMain, windowsMain, etc.
-    sourceSets.nativeMain.dependencies {
-        implementation("app.cash.sqldelight:native-driver:2.0.1")
-    }
-
-     */
-
-
-
     sourceSets {
         val desktopMain by getting
 
@@ -64,6 +41,7 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
             implementation("app.cash.sqldelight:android-driver:2.0.1")
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -72,11 +50,13 @@ kotlin {
             implementation(compose.ui)
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
+
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
-            //implementation("com.squareup.sqldelight.drivers.native.NativeSqliteDriver:2.0.1")
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")
         }
     }
 }
