@@ -29,7 +29,28 @@ import data.RecipeItem
 import data.RecipeRepository
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
+import compose.icons.AllIcons
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Clock
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -46,18 +67,20 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: I
                     repository.insertRecipe(newRecipe)
                     currentRecipes  += newRecipe
                     selectedRecipe = null
-                }
-            )
+                },
+            onCancel = {addingRecipe = false})
         } else if (selectedRecipe == null) {
 
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize() .background(Color(0xFFFFFDD1)), //0xFFFFFDD1 0xFFFFFEE8
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally
+
                 ) {
                     LazyColumn(
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(16.dp)
+
                     ) {
                         items(currentRecipes) { recipe ->
                             RecipeListItem(imageHandler, recipe = recipe) {
@@ -69,6 +92,7 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: I
 
                     Button(
                         onClick = { addingRecipe = true },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFD67D)),
                         modifier = Modifier
                             .padding(bottom = 16.dp)
                     ) {
@@ -76,76 +100,112 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: I
                     }
                 }
         } else {
-            RecipeDetails(recipe = selectedRecipe!!, onClose = { selectedRecipe = null })
+            RecipeDetails(recipe = selectedRecipe!!, onClose = { selectedRecipe = null }, imageHandler)
         }
     }
 }
 
 @Composable
-fun RecipeListItem(imageHandler: ImageHandler, recipe: RecipeItem, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        recipe.image?.let { imageData ->
-            val imageBitmap = imageHandler.toImageBitmap(imageData)
-            Image(
-                bitmap = imageBitmap,
-                contentDescription = null,
-                modifier = Modifier
-                    .width(72.dp)
-                    .fillMaxWidth()
-            )
-        }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(4.dp)
-                .fillMaxWidth()
-                .align(Alignment.CenterVertically)
-                .clickable { onClick() }
+fun RecipeListItem(imageHandler: ImageHandler, recipe: RecipeItem, onClick: () -> Unit) { //0xFFFFF3B0
+    Card(elevation = 10.dp, modifier = Modifier.padding(5.dp), backgroundColor = Color.White) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = recipe.name,
-                style = MaterialTheme.typography.h5
-            )
-            Text(
-                text = "Category: ${recipe.category}",
-                style = MaterialTheme.typography.body1
-            )
-        }
 
+            recipe.image?.let { imageData ->
+                val imageBitmap = imageHandler.toImageBitmap(imageData)
+                Image(
+                    bitmap = imageBitmap,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .width(72.dp)
+                        .fillMaxWidth()
+                        .padding(6.dp, 0.dp)
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.CenterVertically)
+                    .clickable { onClick() }
+            ) {
+                Text(
+                    text = recipe.name,
+                    style = MaterialTheme.typography.h5,
+                )
+                Text(
+                    text = "Category: ${recipe.category}",
+                    style = MaterialTheme.typography.body1,
+                )
+                PrepTimeIcon(recipe, 12.dp, MaterialTheme.typography.body2)
+            }
+        }
     }
 }
 
 @Composable
-fun RecipeDetails(recipe: RecipeItem, onClose: () -> Unit) {
-    Column(
+fun RecipeDetails(recipe: RecipeItem, onClose: () -> Unit, imageHandler: ImageHandler) {
+    var imageBitmap = ImageBitmap(1, 1)
+    recipe.image?.let { imageData ->
+        imageBitmap = imageHandler.toImageBitmap(imageData)
+    }
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color(0xFFFFFDD1)),
     ) {
+        detailsLayout(recipe, imageBitmap, onClose)
+    }
+}
 
-        Text(
-            text = recipe.name,
-            style = MaterialTheme.typography.h4,
-            modifier = Modifier.padding(bottom = 16.dp)
+@Composable
+fun Details(recipe: RecipeItem) {
+    Text(
+        text = "Ingredients",
+        style = MaterialTheme.typography.h6,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+    Text(
+        text = buildAnnotatedString {
+            recipe.ingredients.split("\n").forEachIndexed { index, ingredient ->
+                val bulletPoint = if (index == 0) "• " else "\n• "
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Normal)) {
+                    append(bulletPoint)
+                }
+                append(ingredient.trim())
+            }
+        },
+        style = MaterialTheme.typography.body1
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    Text(
+        text = "Instructions",
+        style = MaterialTheme.typography.h6,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+    Text(
+        text = recipe.instructions,
+        style = MaterialTheme.typography.body1
+    )
+}
+
+@Composable
+fun PrepTimeIcon(recipe: RecipeItem, iconSize: Dp, textStyle: TextStyle) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = FeatherIcons.Clock,
+            contentDescription = "Preparation Time Icon",
+            modifier = Modifier.size(iconSize)
         )
+        Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = "Instructions",
-            style = MaterialTheme.typography.subtitle1,
-            modifier = Modifier.padding(bottom = 8.dp)
+            text = recipe.preptime,
+            style = textStyle,
         )
-        Text(
-            text = recipe.instructions,
-            style = MaterialTheme.typography.body1
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onClose) {
-            Text("Close")
-        }
     }
 }

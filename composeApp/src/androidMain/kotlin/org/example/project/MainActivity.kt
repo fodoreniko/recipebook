@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         val driver = DriverFactory(applicationContext).createDriver()
         val database = Database(driver)
         repository = RecipeRepository(database)
-
+        //repository.removeAllRecipes()
         var allRecipes = repository.getAllRecipes()
         var imageHandler = ImageHandler(applicationContext)
         setContent {
@@ -34,6 +34,6 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    //App(allRecipes)
+
 }
 

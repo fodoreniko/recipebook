@@ -52,6 +52,7 @@ kotlin {
             implementation(compose.components.resources)
 
             implementation("com.darkrockstudios:mpfilepicker:3.1.0")
+            implementation("br.com.devsrsouza.compose.icons:feather:1.1.0")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

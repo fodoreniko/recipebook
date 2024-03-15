@@ -6,8 +6,6 @@ import data.Database
 import data.DriverFactory
 import data.RecipeRepository
 
-
-
 fun main() = application {
 
     Window(onCloseRequest = ::exitApplication, title = "RecipeBook") {
@@ -25,5 +23,5 @@ fun main() = application {
 @Preview
 @Composable
 fun AppDesktopPreview() {
-    //App()
+
 }
