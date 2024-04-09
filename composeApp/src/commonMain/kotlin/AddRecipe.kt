@@ -9,17 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.Clock
 import compose.icons.feathericons.Image
 import data.RecipeItem
 import kotlinx.coroutines.launch
@@ -44,8 +40,6 @@ fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit, o
     var preptime by remember { mutableStateOf("") }
     var selectedImage by remember { mutableStateOf<ByteArray?>(null) }
     var showFilePicker by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-    var imageAdded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -107,7 +101,7 @@ fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit, o
                 }
             }
 
-            if (imageAdded) {
+            if (selectedImage != null) {
                 selectedImage?.let { imageData ->
                     Image(
                         bitmap = imageHandler.toImageBitmap(imageData),
@@ -154,23 +148,7 @@ fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit, o
             }
 
             if (showFilePicker) {
-                val fileType = listOf("jpg", "png")
-
-                FilePicker(show = showFilePicker, fileExtensions = fileType) { platformFile ->
-                    showFilePicker = false
-
-                    platformFile?.let {
-                        coroutineScope.launch {
-                            try {
-                                val bytes = imageHandler.getFileByteArray(platformFile)
-                                selectedImage = imageHandler.resizeImage(bytes, 1000)
-                                imageAdded = true
-                            } catch (e: IOException) {
-                                throw e
-                            }
-                        }
-                    }
-                }
+                selectedImage = addImage(imageHandler)
             }
         }
     }
@@ -182,24 +160,40 @@ fun CustomTextField(
     onValueChange: (String) -> Unit,
     label: String,
 ) {
-    var isFocused by remember { mutableStateOf(false) }
-
     TextField(
         value = value,
         onValueChange = onValueChange,
-        label = {
-            Text(
-                text = label,
-                color = if (isFocused) Color(0xFFFFD67D) else Color.DarkGray
-            )
-        },
+        label = {Text(label)},
         modifier = Modifier.fillMaxWidth(),
         colors = TextFieldDefaults.textFieldColors(
             backgroundColor = Color.White,
             focusedIndicatorColor = Color(0xFFFFD67D),
             unfocusedIndicatorColor = Color.Gray,
-            cursorColor = Color(0xFFFFD67D),
-            textColor = Color.DarkGray
+            focusedLabelColor = Color(0xFFf5bc45)
         )
     )
+}
+
+@Composable
+fun addImage(imageHandler: ImageHandler): ByteArray? {
+    var showFilePicker by remember { mutableStateOf(true) }
+    var selectedImage by remember { mutableStateOf<ByteArray?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+        val fileType = listOf("jpg", "png")
+
+        FilePicker(show = showFilePicker, fileExtensions = fileType) { platformFile ->
+            showFilePicker = false
+
+            platformFile?.let {
+                coroutineScope.launch {
+                    try {
+                        val bytes = imageHandler.getFileByteArray(platformFile)
+                        selectedImage = imageHandler.resizeImage(bytes, 1000)
+                    } catch (e: IOException) {
+                        throw e
+                    }
+                }
+            }
+        }
+    return selectedImage
 }

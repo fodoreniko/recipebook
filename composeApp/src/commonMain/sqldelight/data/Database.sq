@@ -21,3 +21,24 @@ DELETE FROM RecipeItem;
 selectAllRecipesInfo:
 SELECT RecipeItem.*
 FROM RecipeItem;
+
+delete:
+DELETE FROM RecipeItem WHERE id = ?;
+
+getLastRecipe:
+SELECT RecipeItem.* FROM RecipeItem ORDER BY id DESC LIMIT 1;
+
+update:
+UPDATE RecipeItem
+SET name = ?, instructions = ?, ingredients = ?, category = ?, saved = ?, preptime = ?, image = ?
+WHERE id = ?;
+
+getSavedRecipes:
+SELECT RecipeItem.*
+FROM RecipeItem
+WHERE saved = 1;
+
+getRecipe:
+SELECT RecipeItem.*
+FROM RecipeItem
+WHERE id = ?;
