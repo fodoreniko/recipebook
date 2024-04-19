@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontStyle
 import data.RecipeRepository
 
 @Composable
-actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, imageHandler: ImageHandler, onClose: (RecipeItem?) -> Unit, onDelete: () -> Unit) {
+actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, onClose: (RecipeItem?) -> Unit, onDelete: () -> Unit) {
     var showDeleteConfirmationDialog  by remember { mutableStateOf(false) }
     var edit  by remember { mutableStateOf(false) }
     var editedRecipe  by remember { mutableStateOf(recipe) }
@@ -45,7 +45,7 @@ actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, image
             .background(Color(0xFFFFFDD1)),
     ) {
         if (edit) {
-            editRecipe(recipe, imageHandler, { edit = false }) { updatedRecipe ->
+            editRecipe(recipe, { edit = false }) { updatedRecipe ->
                 repository.update(updatedRecipe)
                 editedRecipe = updatedRecipe
                 modifiedRecipe = true
@@ -60,9 +60,19 @@ actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, image
                     modifier = Modifier.weight(0.6f).fillMaxHeight(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    editedRecipe.image?.let { imageData ->
+                    if(editedRecipe.image != null) {
+                        editedRecipe.image?.let { imageData ->
+                            Image(
+                                bitmap = toImageBitmap(imageData),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .width(200.dp)
+                                    .height(200.dp)
+                            )
+                        }
+                    } else {
                         Image(
-                            bitmap = imageHandler.toImageBitmap(imageData),
+                            painter = getDefaultImage(),
                             contentDescription = null,
                             modifier = Modifier
                                 .width(200.dp)
@@ -71,18 +81,15 @@ actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, image
                     }
 
                     Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = editedRecipe.name,
-                            style = MaterialTheme.typography.h4,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                    }
+
+                    Text(
+                        text = editedRecipe.name,
+                        style = MaterialTheme.typography.h4,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
 
                     PrepTimeIcon(editedRecipe, 24.dp, MaterialTheme.typography.body1)
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row() {
                         Text(
                             text = "Category: ",

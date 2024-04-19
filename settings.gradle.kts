@@ -1,4 +1,4 @@
-rootProject.name = "RecipeBook"
+rootProject.name = "recipebook"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

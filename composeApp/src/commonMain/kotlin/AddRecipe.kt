@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
@@ -32,7 +33,7 @@ import java.io.IOException
 
 
 @Composable
-fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit, onCancel: () -> Unit) {
+fun AddRecipe(onRecipeAdded: (RecipeItem) -> Unit, onCancel: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var instructions by remember { mutableStateOf("") }
     var ingredients by remember { mutableStateOf("") }
@@ -40,6 +41,7 @@ fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit, o
     var preptime by remember { mutableStateOf("") }
     var selectedImage by remember { mutableStateOf<ByteArray?>(null) }
     var showFilePicker by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -104,7 +106,7 @@ fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit, o
             if (selectedImage != null) {
                 selectedImage?.let { imageData ->
                     Image(
-                        bitmap = imageHandler.toImageBitmap(imageData),
+                        bitmap = toImageBitmap(imageData),
                         contentDescription = null,
                         modifier = Modifier
                             .width(72.dp)
@@ -130,17 +132,21 @@ fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit, o
                 Button(
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFD67D)),
                     onClick = {
-                        val newRecipe = RecipeItem(
-                            id = 0,
-                            name = name,
-                            instructions = instructions,
-                            ingredients = ingredients,
-                            category = category,
-                            saved = 0,
-                            preptime = preptime,
-                            image = selectedImage
-                        )
-                        onRecipeAdded(newRecipe)
+                        if (name.isNotEmpty() && instructions.isNotEmpty() && ingredients.isNotEmpty() && category.isNotEmpty() && preptime.isNotEmpty()) {
+                            val newRecipe = RecipeItem(
+                                id = 0,
+                                name = name,
+                                instructions = instructions,
+                                ingredients = ingredients,
+                                category = category,
+                                saved = 0,
+                                preptime = preptime,
+                                image = selectedImage
+                            )
+                            onRecipeAdded(newRecipe)
+                        } else {
+                            showDialog = true
+                        }
                     }
                 ) {
                     Text("Add recipe")
@@ -148,7 +154,24 @@ fun AddRecipe(imageHandler: ImageHandler, onRecipeAdded: (RecipeItem) -> Unit, o
             }
 
             if (showFilePicker) {
-                selectedImage = addImage(imageHandler)
+                selectedImage = addImage()
+            }
+
+            if(showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Error") },
+                    text = { Text("Please fill out all fields.") },
+                    dismissButton = {
+                        Button(
+                            onClick = { showDialog = false },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFFD67D)),
+                        ) {
+                            Text("Ok")
+                        }
+                    },
+                    confirmButton = { },
+                )
             }
         }
     }
@@ -175,7 +198,7 @@ fun CustomTextField(
 }
 
 @Composable
-fun addImage(imageHandler: ImageHandler): ByteArray? {
+fun addImage(): ByteArray? {
     var showFilePicker by remember { mutableStateOf(true) }
     var selectedImage by remember { mutableStateOf<ByteArray?>(null) }
     val coroutineScope = rememberCoroutineScope()
@@ -187,8 +210,8 @@ fun addImage(imageHandler: ImageHandler): ByteArray? {
             platformFile?.let {
                 coroutineScope.launch {
                     try {
-                        val bytes = imageHandler.getFileByteArray(platformFile)
-                        selectedImage = imageHandler.resizeImage(bytes, 1000)
+                        val bytes = getFileByteArray(platformFile)
+                        selectedImage = resizeImage(bytes, 1000)
                     } catch (e: IOException) {
                         throw e
                     }

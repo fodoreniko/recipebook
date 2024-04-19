@@ -1,7 +1,6 @@
 package org.example.project
 
 import App
-import ImageHandler
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,7 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import data.Database
 import data.DriverFactory
 import data.RecipeRepository
-
+import setA
 
 
 class MainActivity : ComponentActivity() {
@@ -24,9 +23,11 @@ class MainActivity : ComponentActivity() {
         repository = RecipeRepository(database)
         //repository.removeAllRecipes()
         var allRecipes = repository.getAllRecipes()
-        var imageHandler = ImageHandler(applicationContext)
+        //var imageHandler = ImageHandler()
+        setA(applicationContext)
+
         setContent {
-            App(allRecipes, repository, imageHandler)
+            App(allRecipes, repository)
         }
     }
 }

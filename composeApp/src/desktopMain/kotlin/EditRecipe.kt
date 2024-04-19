@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import data.RecipeItem
 
 @Composable
-fun editRecipe(recipe: RecipeItem, imageHandler: ImageHandler, onClose: () -> Unit, onSave: (RecipeItem) -> Unit) {
+fun editRecipe(recipe: RecipeItem, onClose: () -> Unit, onSave: (RecipeItem) -> Unit) {
     var editedName by remember { mutableStateOf(recipe.name) }
     var editedIngredients by remember { mutableStateOf(recipe.ingredients) }
     var editedInstructions by remember { mutableStateOf(recipe.instructions) }
@@ -52,9 +52,19 @@ fun editRecipe(recipe: RecipeItem, imageHandler: ImageHandler, onClose: () -> Un
                     .height(200.dp)
                     .clickable { showFilePicker = true }
             ) {
-                selectedImage?.let { imageData ->
+                if(selectedImage != null) {
+                    selectedImage?.let { imageData ->
+                        Image(
+                            bitmap = toImageBitmap(imageData),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .width(200.dp)
+                                .height(200.dp)
+                        )
+                    }
+                } else {
                     Image(
-                        bitmap = imageHandler.toImageBitmap(imageData),
+                        painter = getDefaultImage(),
                         contentDescription = null,
                         modifier = Modifier
                             .width(200.dp)
@@ -121,7 +131,7 @@ fun editRecipe(recipe: RecipeItem, imageHandler: ImageHandler, onClose: () -> Un
         }
 
         if (showFilePicker) {
-            selectedImage = addImage(imageHandler)
+            selectedImage = addImage()
         }
     }
 }

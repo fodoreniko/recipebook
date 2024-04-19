@@ -14,8 +14,8 @@ fun main() = application {
         val repository = RecipeRepository(database)
         //repository.removeAllRecipes()
         var allRecipes = repository.getAllRecipes()
-        var imageHandler = ImageHandler()
-        App(allRecipes, repository, imageHandler)
+        //var imageHandler = ImageHandler()
+        App(allRecipes, repository)
 
     }
 }

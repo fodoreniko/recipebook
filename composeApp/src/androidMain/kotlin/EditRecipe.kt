@@ -29,7 +29,7 @@ import data.RecipeItem
 
 
 @Composable
-fun editRecipe(recipe: RecipeItem, imageHandler: ImageHandler, onClose: () -> Unit, onSave: (RecipeItem) -> Unit) {
+fun editRecipe(recipe: RecipeItem, onClose: () -> Unit, onSave: (RecipeItem) -> Unit) {
     var editedName by remember { mutableStateOf(recipe.name) }
     var editedIngredients by remember { mutableStateOf(recipe.ingredients) }
     var editedInstructions by remember { mutableStateOf(recipe.instructions) }
@@ -55,17 +55,22 @@ fun editRecipe(recipe: RecipeItem, imageHandler: ImageHandler, onClose: () -> Un
                     .align(Alignment.CenterHorizontally)
                     .clickable { showFilePicker = true }
             ) {
-                selectedImage?.let { imageData ->
+                if(selectedImage != null) {
+                    selectedImage?.let { imageData ->
+                        Image(
+                            bitmap = toImageBitmap(imageData),
+                            contentDescription = null,
+                        )
+                    }
+                } else {
                     Image(
-                        bitmap = imageHandler.toImageBitmap(imageData),
+                        painter = getDefaultImage(),
                         contentDescription = null,
-                        modifier = Modifier
-                            .width(100.dp)
-                            .height(100.dp)
                     )
                 }
 
             }
+            Spacer(modifier = Modifier.height(16.dp))
             CustomTextField(editedName, { editedName = it }, "Name")
             Spacer(modifier = Modifier.height(6.dp))
             CustomTextField(editedPrepTime, { editedPrepTime = it }, "Preparation time")
@@ -112,7 +117,7 @@ fun editRecipe(recipe: RecipeItem, imageHandler: ImageHandler, onClose: () -> Un
         }
 
         if(showFilePicker)  {
-            selectedImage = addImage(imageHandler)
+            selectedImage = addImage()
         }
     }
 }

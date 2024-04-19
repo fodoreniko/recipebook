@@ -1,5 +1,6 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,7 @@ import data.RecipeItem
 import data.RecipeRepository
 
 @Composable
-actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, imageHandler: ImageHandler, onClose: (RecipeItem?) -> Unit, onDelete: () -> Unit) {
+actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, onClose: (RecipeItem?) -> Unit, onDelete: () -> Unit) {
     var showDeleteConfirmationDialog  by remember { mutableStateOf(false) }
     var edit  by remember { mutableStateOf(false) }
     var editedRecipe  by remember { mutableStateOf(recipe) }
@@ -46,7 +47,7 @@ actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, image
             .background(Color(0xFFFFFDD1)),
     ) {
         if (edit) {
-            editRecipe(recipe, imageHandler, { edit = false }) { updatedRecipe ->
+            editRecipe(recipe, { edit = false }) { updatedRecipe ->
                 repository.update(updatedRecipe)
                 editedRecipe = updatedRecipe
                 modifiedRecipe = true
@@ -92,16 +93,27 @@ actual fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, image
                         .padding(16.dp)
                         .verticalScroll(rememberScrollState()),
                 ) {
-                    editedRecipe.image?.let { imageData ->
-                        Image(
-                            bitmap = imageHandler.toImageBitmap(imageData),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .width(100.dp)
-                                .height(100.dp)
-                                .align(Alignment.CenterHorizontally)
-                        )
+                    Box(
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(100.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        if(editedRecipe.image != null) {
+                            editedRecipe.image?.let { imageData ->
+                                Image(
+                                    bitmap = toImageBitmap(imageData),
+                                    contentDescription = null,
+                                )
+                            }
+                        } else {
+                            Image(
+                                painter = getDefaultImage(),
+                                contentDescription = null,
+                            )
+                        }
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
                     PrepTimeIcon(editedRecipe, 24.dp, MaterialTheme.typography.body1)
                     Spacer(modifier = Modifier.height(16.dp))
                     Details(editedRecipe)

@@ -4,4 +4,4 @@ import androidx.compose.ui.graphics.ImageBitmap
 import data.RecipeRepository
 
 @Composable
-expect fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, imageHandler: ImageHandler, onClose: (RecipeItem?) -> Unit, onDelete: () -> Unit)
+expect fun detailsLayout(repository: RecipeRepository, recipe: RecipeItem, onClose: (RecipeItem?) -> Unit, onDelete: () -> Unit)

@@ -37,6 +37,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -48,7 +49,7 @@ import compose.icons.feathericons.Clock
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: ImageHandler) {
+fun App(recipes: List<RecipeItem>, repository: RecipeRepository) {
     var selectedRecipe by remember { mutableStateOf<RecipeItem?>(null) }
     var addingRecipe by remember { mutableStateOf(false) }
     var showFavourites by remember { mutableStateOf(false) }
@@ -56,7 +57,7 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: I
 
     MaterialTheme {
         if (addingRecipe) {
-            AddRecipe(imageHandler,
+            AddRecipe(
                 onRecipeAdded = { newRecipe ->
                     addingRecipe = false
                     repository.insertRecipe(newRecipe)
@@ -98,13 +99,13 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: I
                 ) {
                     if(!showFavourites) {
                     items(currentRecipes) { recipe ->
-                        RecipeListItem(imageHandler, recipe = recipe, repository) {
+                        RecipeListItem(recipe = recipe, repository) {
                             selectedRecipe = recipe
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                     }} else {
                         items(repository.getSavedRecipes().toMutableList()) { recipe ->
-                            RecipeListItem(imageHandler, recipe = recipe, repository) {
+                            RecipeListItem(recipe = recipe, repository) {
                                 selectedRecipe = recipe
                             }
                             Spacer(modifier = Modifier.height(8.dp))
@@ -128,7 +129,7 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: I
                     selectedRecipe = null
                 }
             }
-            detailsLayout(repository, recipe = selectedRecipe!!, imageHandler,
+            detailsLayout(repository, recipe = selectedRecipe!!,
                 onClose = { updatedRecipe ->
                     if (updatedRecipe != null) {
                         val index = currentRecipes.indexOfFirst { it.id == updatedRecipe.id }
@@ -144,17 +145,27 @@ fun App(recipes: List<RecipeItem>, repository: RecipeRepository, imageHandler: I
 }
 
 @Composable
-fun RecipeListItem(imageHandler: ImageHandler, recipe: RecipeItem, repository: RecipeRepository, onClick: () -> Unit) { //0xFFFFF3B0
+fun RecipeListItem(recipe: RecipeItem, repository: RecipeRepository, onClick: () -> Unit) { //0xFFFFF3B0
     Card(elevation = 10.dp, modifier = Modifier.padding(5.dp), backgroundColor = Color.White) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            recipe.image?.let { imageData ->
-                val imageBitmap = imageHandler.toImageBitmap(imageData)
+            if(recipe.image != null) {
+                recipe.image?.let { imageData ->
+                    val imageBitmap = toImageBitmap(imageData)
+                    Image(
+                        bitmap = imageBitmap,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .width(72.dp)
+                            .fillMaxWidth()
+                            .padding(6.dp, 0.dp)
+                    )
+                }
+            } else {
                 Image(
-                    bitmap = imageBitmap,
+                    painter = getDefaultImage(),
                     contentDescription = null,
                     modifier = Modifier
                         .width(72.dp)
