@@ -5,7 +5,23 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
+    kotlin("plugin.serialization").version("1.9.22")
+    id("app.cash.sqldelight").version("2.0.1")
 }
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("data")
+        }
+    }
+}
+
 
 kotlin {
     androidTarget {
@@ -15,15 +31,17 @@ kotlin {
             }
         }
     }
-    
+
     jvm("desktop")
-    
+
     sourceSets {
         val desktopMain by getting
-        
+
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
+            implementation("app.cash.sqldelight:android-driver:2.0.1")
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -32,9 +50,14 @@ kotlin {
             implementation(compose.ui)
             @OptIn(ExperimentalComposeLibrary::class)
             implementation(compose.components.resources)
+
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")
+            implementation("br.com.devsrsouza.compose.icons:feather:1.1.0")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
+            implementation("com.darkrockstudios:mpfilepicker:3.1.0")
         }
     }
 }
